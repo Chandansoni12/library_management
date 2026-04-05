@@ -158,12 +158,14 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         field.setEditable(true);
         field.setEnabled(true);
         field.setFocusable(true);
-        field.setOpaque(false);
+        field.setOpaque(true);
         field.setBackground(FIELD_BG);
         field.setForeground(TEXT_WHITE);
         field.setCaretColor(TEXT_WHITE);
         field.setSelectionColor(PURPLE_ACCENT);
         field.setSelectedTextColor(TEXT_WHITE);
+        field.setPreferredSize(new Dimension(220, 42));
+        field.setMinimumSize(new Dimension(160, 40));
         field.setBorder(BorderFactory.createCompoundBorder(
                 new RoundedBorder(FIELD_BORDER, 10),
                 BorderFactory.createEmptyBorder(12, 16, 12, 16)
@@ -194,7 +196,7 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         field.setEditable(true);
         field.setEnabled(true);
         field.setFocusable(true);
-        field.setOpaque(false);
+        field.setOpaque(true);
         field.setBackground(FIELD_BG);
         field.setForeground(TEXT_WHITE);
         field.setCaretColor(TEXT_WHITE);
@@ -203,7 +205,7 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         field.setEchoChar('*');
         field.setBorder(BorderFactory.createCompoundBorder(
                 new RoundedBorder(FIELD_BORDER, 10),
-                BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            BorderFactory.createEmptyBorder(12, 16, 12, 16)
         ));
     }
 
@@ -223,6 +225,10 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         table.setShowHorizontalLines(true);
         table.setShowVerticalLines(false);
         table.setIntercellSpacing(new Dimension(0, 1));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        table.setRowSelectionAllowed(true);
+        table.setColumnSelectionAllowed(false);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         // Alternating row colors
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -247,6 +253,7 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         header.setBackground(TABLE_HEADER);
         header.setForeground(TEXT_WHITE);
         header.setFont(FONT_BOLD);
+        header.setReorderingAllowed(false);
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, PURPLE_ACCENT));
         header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override

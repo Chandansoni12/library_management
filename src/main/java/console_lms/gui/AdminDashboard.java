@@ -414,11 +414,13 @@ public class AdminDashboard extends JFrame {
         // Form card
         JPanel formCard = Theme.createCardPanel();
         formCard.setLayout(new GridBagLayout());
-        formCard.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));  // Larger spacing
+        formCard.setBorder(BorderFactory.createEmptyBorder(36, 44, 36, 44));
+        formCard.setPreferredSize(new Dimension(760, 460));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(12, 15, 12, 15);  // More padding between fields
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(10, 14, 10, 14);
 
         // Fields - explicitly editable
         JTextField isbnField = new JTextField(20);
@@ -438,6 +440,8 @@ public class AdminDashboard extends JFrame {
             f.setEditable(true);
             f.setEnabled(true);
             f.setFocusable(true);
+            f.setPreferredSize(new Dimension(230, 42));
+            f.setMinimumSize(new Dimension(170, 40));
         }
 
         // Layout: 2 columns of label-field pairs
@@ -450,10 +454,7 @@ public class AdminDashboard extends JFrame {
             gbc.gridx = col;
             gbc.gridy = row;
             gbc.weightx = 0;
-            JLabel lbl = new JLabel(labels[i]);
-            lbl.setFont(Theme.FONT_BOLD);
-            lbl.setForeground(Theme.TEXT_LIGHT);
-            formCard.add(lbl, gbc);
+            formCard.add(createFormLabel(labels[i]), gbc);
 
             gbc.gridx = col + 1;
             gbc.weightx = 1.0;
@@ -467,10 +468,9 @@ public class AdminDashboard extends JFrame {
         gbc.insets = new Insets(30, 20, 20, 20);
         JButton saveBtn = new JButton("Save Book");
         Theme.styleButton(saveBtn);
-        saveBtn.setPreferredSize(new Dimension(240, 50));  // Larger button
+        saveBtn.setPreferredSize(new Dimension(240, 48));
 
         saveBtn.addActionListener(e -> {
-    System.out.println("=== Add Book Button Clicked ===");
     try {
         String isbn = isbnField.getText().trim();
         String title = nameField.getText().trim();
@@ -483,13 +483,9 @@ public class AdminDashboard extends JFrame {
 
         double price = Double.parseDouble(priceField.getText().trim());
         int pages = pagesField.getText().trim().isEmpty() ? 0 : Integer.parseInt(pagesField.getText().trim());
-
-        System.out.println("Book Added: " + title);
         
         service.addBook(isbn, title, author, publisherField.getText().trim(),
             editionField.getText().trim(), genreField.getText().trim(), price, pages);
-
-        System.out.println("Book saved successfully");
 
         JOptionPane.showMessageDialog(this, "Book Added Successfully!");
 
@@ -501,10 +497,8 @@ public class AdminDashboard extends JFrame {
         refreshAllViews();
 
     } catch (NumberFormatException ex) {
-        System.err.println("Number parse error: " + ex.getMessage());
         JOptionPane.showMessageDialog(this, "Enter valid numbers for Price/Pages");
     } catch (Exception ex) {
-        ex.printStackTrace();
         JOptionPane.showMessageDialog(this, "Error adding book: " + ex.getMessage());
     }
 });
@@ -515,6 +509,8 @@ public class AdminDashboard extends JFrame {
         wrapper.setOpaque(false);
         wrapper.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
         wrapper.add(formCard);
+
+        SwingUtilities.invokeLater(isbnField::requestFocusInWindow);
 
         panel.add(wrapper, BorderLayout.CENTER);
         return panel;

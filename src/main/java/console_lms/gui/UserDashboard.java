@@ -310,8 +310,6 @@ public class UserDashboard extends JFrame {
         });
 
         actionPanel.add(borrowPanel);
-
-        actionPanel.add(reqBtn);
         panel.add(actionPanel, BorderLayout.SOUTH);
 
         // Search logic
