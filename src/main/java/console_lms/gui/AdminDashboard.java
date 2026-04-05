@@ -27,6 +27,8 @@ public class AdminDashboard extends JFrame {
 
         setTitle("Library Pro - Admin Dashboard");
         setSize(1100, 700);
+        setMinimumSize(new Dimension(980, 620));
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(0, 0));
@@ -107,34 +109,34 @@ public class AdminDashboard extends JFrame {
         sidebar.add(menuLabel);
 
         // Menu buttons
-        JButton dashBtn = Theme.createSidebarButton("Dashboard", "\u25A3");
+        JButton dashBtn = Theme.createSidebarButton("Dashboard", "\uD83D\uDCCA");
         dashBtn.addActionListener(e -> cardLayout.show(cardPanel, "Dashboard"));
         sidebar.add(dashBtn);
 
-        JButton addBookBtn = Theme.createSidebarButton("Add Book", "\u002B");
+        JButton addBookBtn = Theme.createSidebarButton("Add Book", "\u2795");
         addBookBtn.addActionListener(e -> cardLayout.show(cardPanel, "AddBook"));
         sidebar.add(addBookBtn);
 
-        JButton manageBooksBtn = Theme.createSidebarButton("Manage Books", "\u2637");
+        JButton manageBooksBtn = Theme.createSidebarButton("Manage Books", "\uD83D\uDCDA");
         manageBooksBtn.addActionListener(e -> cardLayout.show(cardPanel, "ManageBooks"));
         sidebar.add(manageBooksBtn);
 
-        JButton addUserBtn = Theme.createSidebarButton("Add User", "\u263A");
+        JButton addUserBtn = Theme.createSidebarButton("Add User", "\uD83D\uDC64");
         addUserBtn.addActionListener(e -> cardLayout.show(cardPanel, "ManageUsers"));
         sidebar.add(addUserBtn);
 
-        JButton issueBtn = Theme.createSidebarButton("Issue Book", "\u2794");
+        JButton issueBtn = Theme.createSidebarButton("Issue Book", "\uD83D\uDCE4");
         issueBtn.addActionListener(e -> cardLayout.show(cardPanel, "IssueBook"));
         sidebar.add(issueBtn);
 
-        JButton issuedBtn = Theme.createSidebarButton("Issued Books", "\u2611");
+        JButton issuedBtn = Theme.createSidebarButton("Issued Books", "\uD83D\uDCDD");
         issuedBtn.addActionListener(e -> cardLayout.show(cardPanel, "IssuedBooks"));
         sidebar.add(issuedBtn);
 
         sidebar.add(Box.createVerticalGlue());
 
         // Logout button (red)
-        JButton logoutBtn = Theme.createSidebarButton("Logout", "\u2716");
+        JButton logoutBtn = Theme.createSidebarButton("Logout", "\u274C");
         logoutBtn.setForeground(new Color(255, 150, 150));
         logoutBtn.addActionListener(e -> {
             dispose();
@@ -177,7 +179,10 @@ public class AdminDashboard extends JFrame {
         centerPanel.setOpaque(false);
         centerPanel.add(statsContainer, BorderLayout.NORTH);
 
-        // Recent books table (quick overview)
+        JPanel bottomSplit = new JPanel(new GridLayout(1, 2, 20, 0));
+        bottomSplit.setOpaque(false);
+
+        // 1. Recent books table (quick overview)
         JPanel tableCard = Theme.createCardPanel();
         tableCard.setLayout(new BorderLayout());
         tableCard.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -188,7 +193,7 @@ public class AdminDashboard extends JFrame {
         tableTitle.setBorder(BorderFactory.createEmptyBorder(0, 5, 10, 0));
         tableCard.add(tableTitle, BorderLayout.NORTH);
 
-        String[] cols = {"ID", "ISBN", "Book Name", "Publisher", "Price"};
+        String[] cols = {"ID", "Book Name", "Publisher"};
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
@@ -202,7 +207,52 @@ public class AdminDashboard extends JFrame {
         Theme.styleScrollPane(sp);
         tableCard.add(sp, BorderLayout.CENTER);
 
-        centerPanel.add(tableCard, BorderLayout.CENTER);
+        bottomSplit.add(tableCard);
+
+        // 2. Alerts / Notifications card
+        JPanel alertsCard = Theme.createCardPanel();
+        alertsCard.setLayout(new BorderLayout());
+        alertsCard.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        JLabel alertsTitle = new JLabel("Returns / Due Soon Alerts");
+        alertsTitle.setFont(Theme.FONT_SUBTITLE);
+        alertsTitle.setForeground(Theme.WARNING_COLOR);
+        alertsTitle.setBorder(BorderFactory.createEmptyBorder(0, 5, 10, 0));
+        alertsCard.add(alertsTitle, BorderLayout.NORTH);
+
+        String[] alertCols = {"Username", "Book Title", "Due Date", "Days Left"};
+        DefaultTableModel alertModel = new DefaultTableModel(alertCols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable alertTable = new JTable(alertModel);
+        Theme.styleTable(alertTable);
+        JScrollPane alertSp = new JScrollPane(alertTable);
+        Theme.styleScrollPane(alertSp);
+        alertsCard.add(alertSp, BorderLayout.CENTER);
+        
+        // Populate alerts on show
+        panel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                alertModel.setRowCount(0);
+                java.time.LocalDate now = java.time.LocalDate.now();
+                service.getIssuedBooks().stream()
+                       .filter(b -> b.getDueDate() != null)
+                       .sorted(java.util.Comparator.comparing(Book::getDueDate))
+                       .forEach(b -> {
+                           long days = java.time.temporal.ChronoUnit.DAYS.between(now, b.getDueDate());
+                           if (days <= 3) {
+                               String uname = service.getUsernameById(b.getIssuedToUserId());
+                               String status = days < 0 ? "Overdue" : days + " days";
+                               alertModel.addRow(new Object[]{uname, b.getTitle(), b.getDueDate(), status});
+                           }
+                       });
+            }
+        });
+
+        bottomSplit.add(alertsCard);
+
+        centerPanel.add(bottomSplit, BorderLayout.CENTER);
 
         panel.add(centerPanel, BorderLayout.CENTER);
         return panel;
@@ -211,8 +261,7 @@ public class AdminDashboard extends JFrame {
     private void refreshCatalogTable(DefaultTableModel model) {
         model.setRowCount(0);
         for (Book b : service.getAllBooks()) {
-            model.addRow(new Object[]{b.getId(), b.getIsbn(), b.getTitle(),
-                    b.getPublisher(), String.format("$%.2f", b.getPrice())});
+            model.addRow(new Object[]{b.getId(), b.getTitle(), b.getPublisher()});
         }
     }
 
@@ -512,7 +561,14 @@ public class AdminDashboard extends JFrame {
 
         SwingUtilities.invokeLater(isbnField::requestFocusInWindow);
 
-        panel.add(wrapper, BorderLayout.CENTER);
+        JScrollPane formScroll = new JScrollPane(wrapper);
+        formScroll.setBorder(BorderFactory.createEmptyBorder());
+        formScroll.setOpaque(false);
+        formScroll.getViewport().setOpaque(false);
+        formScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        formScroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        panel.add(formScroll, BorderLayout.CENTER);
         return panel;
     }
 

@@ -26,6 +26,8 @@ public class UserDashboard extends JFrame {
 
         setTitle("Library Pro - " + user.getUsername());
         setSize(1050, 680);
+        setMinimumSize(new Dimension(920, 600));
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(0, 0));
@@ -101,7 +103,7 @@ public class UserDashboard extends JFrame {
         sidebar.add(menuLabel);
 
         // Menu buttons
-        JButton dashBtn = Theme.createSidebarButton("Dashboard", "\u25A3");
+        JButton dashBtn = Theme.createSidebarButton("Dashboard", "\uD83D\uDCCA");
         dashBtn.addActionListener(e -> cardLayout.show(cardPanel, "Dashboard"));
         sidebar.add(dashBtn);
 
@@ -116,7 +118,7 @@ public class UserDashboard extends JFrame {
         sidebar.add(Box.createVerticalGlue());
 
         // Logout
-        JButton logoutBtn = Theme.createSidebarButton("Logout", "\u2716");
+        JButton logoutBtn = Theme.createSidebarButton("Logout", "\u274C");
         logoutBtn.setForeground(new Color(255, 150, 150));
         logoutBtn.addActionListener(e -> {
             dispose();
@@ -191,6 +193,27 @@ public class UserDashboard extends JFrame {
         innerContent.add(welcomeDesc);
         innerContent.add(Box.createRigidArea(new Dimension(0, 15)));
         innerContent.add(borrowedInfo);
+        innerContent.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // Embedded mini-table of borrowed books
+        JLabel dueTitle = new JLabel("Your Next Due Books:");
+        dueTitle.setFont(Theme.FONT_BOLD);
+        dueTitle.setForeground(Theme.TEXT_WHITE);
+        dueTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        innerContent.add(dueTitle);
+        
+        String[] dbCols = {"Title", "Due Date"};
+        DefaultTableModel dbModel = new DefaultTableModel(dbCols, 0) {
+            @Override public boolean isCellEditable(int row, int col) { return false; }
+        };
+        JTable dbTable = new JTable(dbModel);
+        Theme.styleTable(dbTable);
+        JScrollPane dbScroll = new JScrollPane(dbTable);
+        Theme.styleScrollPane(dbScroll);
+        dbScroll.setPreferredSize(new Dimension(400, 150));
+        dbScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        innerContent.add(Box.createRigidArea(new Dimension(0, 5)));
+        innerContent.add(dbScroll);
 
         welcomeCard.add(innerContent, BorderLayout.CENTER);
         centerPanel.add(welcomeCard, BorderLayout.CENTER);
@@ -201,8 +224,16 @@ public class UserDashboard extends JFrame {
         panel.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentShown(java.awt.event.ComponentEvent evt) {
-                int myBooks = service.getBooksIssuedTo(user.getId()).size();
-                borrowedInfo.setText("You have " + myBooks + " book(s) currently borrowed.");
+                List<Book> myBooks = service.getBooksIssuedTo(user.getId());
+                borrowedInfo.setText("You have " + myBooks.size() + " book(s) currently borrowed.");
+                dbModel.setRowCount(0);
+                myBooks.stream()
+                       .sorted((b1, b2) -> {
+                           if(b1.getDueDate() == null) return 1;
+                           if(b2.getDueDate() == null) return -1;
+                           return b1.getDueDate().compareTo(b2.getDueDate());
+                       })
+                       .forEach(b -> dbModel.addRow(new Object[]{b.getTitle(), b.getDueDate()}));
             }
         });
 

@@ -112,7 +112,7 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
      * Styles a sidebar menu button with hover animation.
      */
     public static JButton createSidebarButton(String text, String iconChar) {
-        JButton btn = new JButton(iconChar + "  " + text);
+        JButton btn = new JButton("<html><span style='font-family:\"Segoe UI Emoji\"; font-size:16px;'>" + iconChar + "</span>&nbsp;&nbsp;" + text + "</html>");
         btn.setFont(FONT_SIDEBAR);
         btn.setForeground(TEXT_LIGHT);
         btn.setBackground(SIDEBAR_BG);
@@ -168,7 +168,7 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         field.setMinimumSize(new Dimension(160, 40));
         field.setBorder(BorderFactory.createCompoundBorder(
                 new RoundedBorder(FIELD_BORDER, 10),
-                BorderFactory.createEmptyBorder(12, 16, 12, 16)
+            BorderFactory.createEmptyBorder(10, 14, 10, 14)
         ));
         
         // Focus listener for better UX
@@ -176,13 +176,13 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
             public void focusGained(java.awt.event.FocusEvent evt) {
                 field.setBorder(BorderFactory.createCompoundBorder(
                     new RoundedBorder(FIELD_FOCUS, 10),
-                    BorderFactory.createEmptyBorder(12, 16, 12, 16)
+                    BorderFactory.createEmptyBorder(10, 14, 10, 14)
                 ));
             }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 field.setBorder(BorderFactory.createCompoundBorder(
                     new RoundedBorder(FIELD_BORDER, 10),
-                    BorderFactory.createEmptyBorder(12, 16, 12, 16)
+                    BorderFactory.createEmptyBorder(10, 14, 10, 14)
                 ));
             }
         });
@@ -205,7 +205,7 @@ public static final Color BG_DARK        = new Color(30, 30, 47);     // #1E1E2F
         field.setEchoChar('*');
         field.setBorder(BorderFactory.createCompoundBorder(
                 new RoundedBorder(FIELD_BORDER, 10),
-            BorderFactory.createEmptyBorder(12, 16, 12, 16)
+            BorderFactory.createEmptyBorder(10, 14, 10, 14)
         ));
     }
 
